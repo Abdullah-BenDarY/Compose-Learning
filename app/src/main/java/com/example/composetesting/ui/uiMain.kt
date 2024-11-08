@@ -48,8 +48,8 @@ fun GreetingPreview() = MainScreen()
 
 @Composable
 fun MainScreen() {
-    var counter: Int by remember { mutableIntStateOf(0) }
-    var showLoginButton: Boolean by remember { mutableStateOf(false) }
+    val counter = remember { mutableIntStateOf(0) }
+    val showLoginButton = remember { mutableStateOf(false) }
 
     Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
         ConstraintLayout(
@@ -79,8 +79,8 @@ fun MainScreen() {
             )
 
             ProfileImage(
-                onClick = { showLoginButton = true },
-                onLongClick = { showLoginButton = false },
+                onClick = { showLoginButton.value = true },
+                onLongClick = { showLoginButton.value = false },
                 modifier = Modifier.constrainAs(imgProfile) {
                     end.linkTo(tvUserName.start, margin = 5.dp)
                     top.linkTo(parent.top)
@@ -89,17 +89,16 @@ fun MainScreen() {
                 }
             )
 
-            if (showLoginButton) {
+            if (showLoginButton.value) {
                 LoginButton(modifier = Modifier.constrainAs(tvMove) {
                     top.linkTo(row.bottom, margin = 16.dp)
                     start.linkTo(row.start)
                 })
             }
-
             CounterRow(
-                counter = counter,
-                onIncrement = { if (counter < 10) counter++ },
-                onDecrement = { if (counter > 0) counter-- },
+                counter = counter.intValue,
+                onIncrement = { if (counter.intValue < 10) counter.intValue++ },
+                onDecrement = { if (counter.intValue > 0) counter.intValue-- },
                 modifier = Modifier.constrainAs(row) {
                     top.linkTo(imgProfile.bottom)
                     start.linkTo(imgProfile.start)
