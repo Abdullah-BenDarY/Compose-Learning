@@ -1,153 +1,195 @@
 @file:OptIn(ExperimentalFoundationApi::class)
 
 package com.example.composetesting.ui
-
-import android.icu.text.BreakIterator
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.border
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
 import com.example.composetesting.R
+import com.example.composetesting.ui.theme.MintGreen
 import kotlinx.coroutines.delay
+import java.text.BreakIterator
 import java.text.StringCharacterIterator
 
 @Composable
 @Preview(
-    showSystemUi = true,
-    showBackground = true
-)
+    showSystemUi = true, device = "id:pixel_5", showBackground = true)
 fun GreetingPreview() = MainScreen()
 
 @Composable
 fun MainScreen() {
-    var showLoginButton by remember { mutableStateOf(false) }
+    var counter: Int by remember { mutableIntStateOf(0) }
+    var showLoginButton: Boolean by remember { mutableStateOf(false) }
 
-    ConstraintLayout(modifier = Modifier.fillMaxSize()) {
-        val (imgProfile, tvUserName, tvCreatedAt, tvMove) = createRefs()
-
-        Text(
-            text = "Hello, Safy",
-            color = Color.Red,
-            modifier = Modifier.constrainAs(tvUserName) {
-                top.linkTo(imgProfile.top)
-                start.linkTo(imgProfile.end)
-                bottom.linkTo(tvCreatedAt.top)
-            }
-        )
-
-        Text(
-            text = "20 - 10 - 2024",
-            modifier = Modifier.constrainAs(tvCreatedAt) {
-                top.linkTo(tvUserName.bottom)
-                bottom.linkTo(imgProfile.bottom)
-                start.linkTo(tvUserName.start)
-            }
-        )
-
-        Image(
-            painter = painterResource(R.drawable.ic_launcher_background),
-            contentDescription = "imgProfile",
+    Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+        ConstraintLayout(
             modifier = Modifier
-                .combinedClickable(
-                    onClick = {
-                        showLoginButton = true                    },
-                    onLongClick = {
-                        showLoginButton = false
-                    }
-                )
-                .clip(shape = RoundedCornerShape(25.dp))
-                .size(50.dp)
-                .constrainAs(imgProfile) {
-                    end.linkTo(tvUserName.start)
+                .fillMaxSize()
+                .padding(innerPadding)
+        ) {
+            val (row, imgProfile, tvUserName, tvCreatedAt, tvMove) = createRefs()
+
+            Text(
+                text = "Hello, Safy",
+                color = Color.Red,
+                modifier = Modifier.constrainAs(tvUserName) {
+                    top.linkTo(imgProfile.top)
+                    start.linkTo(imgProfile.end)
+                    bottom.linkTo(tvCreatedAt.top)
+                }
+            )
+
+            Text(
+                text = "20 - 10 - 2024",
+                modifier = Modifier.constrainAs(tvCreatedAt) {
+                    top.linkTo(tvUserName.bottom)
+                    bottom.linkTo(imgProfile.bottom)
+                    start.linkTo(tvUserName.start)
+                }
+            )
+
+            ProfileImage(
+                onClick = { showLoginButton = true },
+                onLongClick = { showLoginButton = false },
+                modifier = Modifier.constrainAs(imgProfile) {
+                    end.linkTo(tvUserName.start, margin = 5.dp)
                     top.linkTo(parent.top)
                     start.linkTo(parent.start, margin = 16.dp)
                     bottom.linkTo(parent.bottom)
-                },
-            contentScale = ContentScale.Crop
-        )
+                }
+            )
 
-        if (showLoginButton) {
-            LoginButton(modifier = Modifier.constrainAs(tvMove) {
-                top.linkTo(tvCreatedAt.bottom, margin = 16.dp)
-                start.linkTo(tvCreatedAt.start)
-            })
+            if (showLoginButton) {
+                LoginButton(modifier = Modifier.constrainAs(tvMove) {
+                    top.linkTo(row.bottom, margin = 16.dp)
+                    start.linkTo(row.start)
+                })
+            }
+
+            CounterRow(
+                counter = counter,
+                onIncrement = { if (counter < 10) counter++ },
+                onDecrement = { if (counter > 0) counter-- },
+                modifier = Modifier.constrainAs(row) {
+                    top.linkTo(imgProfile.bottom)
+                    start.linkTo(imgProfile.start)
+                    end.linkTo(tvCreatedAt.end)
+                }
+            )
         }
     }
 }
 
+@Composable
+fun ProfileImage(
+    onClick: () -> Unit,
+    onLongClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Image(
+        painter = painterResource(R.drawable.ic_launcher_background),
+        contentDescription = "imgProfile",
+        modifier = modifier
+            .combinedClickable(
+                onClick = onClick,
+                onLongClick = onLongClick
+            )
+            .clip(shape = RoundedCornerShape(25.dp))
+            .size(50.dp),
+        contentScale = ContentScale.Crop
+    )
+}
 
+@Composable
+fun CounterRow(
+    counter: Int,
+    onIncrement: () -> Unit,
+    onDecrement: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = modifier
+    ) {
 
+        UpdateCounterCartButton(
+            text = "+",
+            onButtonClicked = onIncrement
+        )
+        Text(
+            modifier = Modifier
+                .width(31.dp)
+                .padding(horizontal = 5.dp),
+            textAlign = TextAlign.Center,
+            text = counter.toString(),
+            fontSize = 18.sp
+        )
 
+        UpdateCounterCartButton(
+            text = "-",
+            onButtonClicked = onDecrement
+        )
+    }
+}
 
-
-
-//@Composable
-//@Preview(
-//    showSystemUi = true,
-//    showBackground = true
-//)
-//fun GreetingPreview() = MainScreen()
-//
-//@Composable
-//fun MainScreen() {
-//    ConstraintLayout(modifier = Modifier.fillMaxSize()) {
-//        val (imgProfile, tvUserName, tvCreatedAt, tvMove) = createRefs()
-////        val chained = createVerticalChain(tvUserName, tvCreatedAt, chainStyle = ChainStyle.)
-//        Text(text = "Hello, Safy",
-//            color = Color.Red,
-//            modifier = Modifier
-//
-//                .constrainAs(tvUserName) {
-//                    top.linkTo(imgProfile.top)
-//                    start.linkTo(imgProfile.end)
-//                    bottom.linkTo(tvCreatedAt.top)
-//
-//                })
-//        Text(text = "20 - 10 - 2024" , modifier = Modifier.constrainAs(tvCreatedAt){
-//            top.linkTo(tvUserName.bottom)
-//            bottom.linkTo(imgProfile.bottom)
-//            start.linkTo(tvUserName.start)
-//        })
-//        Image(
-//            painter = painterResource(R.drawable.ic_launcher_background),
-//            contentDescription = "imgProfile",
-//            modifier = Modifier
-//                .clickable {
-//
-//                }
-//                .clip(shape = RoundedCornerShape(25.dp))
-//                .size(50.dp)
-//                .constrainAs(imgProfile) {
-//                    end.linkTo(tvUserName.start)
-//                    top.linkTo(parent.top)
-//                    start.linkTo(parent.start, margin = 16.dp)
-//                    bottom.linkTo(parent.bottom)
-//                },
-//            contentScale = ContentScale.Crop
-//        )
-//
-//    }
-//}
-//
+@Composable
+fun UpdateCounterCartButton(
+    text: String,
+    modifier: Modifier = Modifier,
+    onButtonClicked: () -> Unit
+) {
+    Button(
+        onClick = onButtonClicked,
+        colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
+        contentPadding = PaddingValues(0.dp),
+        modifier = modifier
+            .padding(vertical = 5.dp)
+            .size(30.dp)
+            .border(
+                width = 1.dp,
+                color = MintGreen,
+                shape = CircleShape
+            )
+            .padding(0.dp),
+        shape = CircleShape
+    ) {
+        Text(
+            text = text,
+            color = Color.Black,
+            textAlign = TextAlign.Center
+        )
+    }
+}
 @Composable
 fun LoginButton(modifier: Modifier) {
     val text =
@@ -155,24 +197,20 @@ fun LoginButton(modifier: Modifier) {
     val breakIterator = remember(text) { BreakIterator.getCharacterInstance() }
 
     var substringText by remember {
-        mutableStateOf("")
+        mutableStateOf("_")
     }
     LaunchedEffect(
         text,
     ) {
-        // Initial start delay of the typing animation
-        delay(100)
+        delay(50)
         breakIterator.text = StringCharacterIterator(text)
 
         var nextIndex = breakIterator.next()
-        // Iterate over the string, by index boundary
         while (nextIndex != BreakIterator.DONE) {
             substringText = text.subSequence(0, nextIndex).toString()
-            // Go to the next logical character boundary
             nextIndex = breakIterator.next()
-            delay(100)
+            delay(50)
         }
     }
     Text(substringText, modifier)
 }
-
